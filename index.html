@@ -1,0 +1,33 @@
+<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MONEY PAY</title><script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f5f9;color:#172033;font-family:Arial,sans-serif;padding:18px}
+.wrap{max-width:520px;margin:auto}.brand{font-size:25px;font-weight:800;margin:10px 0 18px;color:#116b52}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card,.panel{background:white;border-radius:16px;padding:18px;box-shadow:0 4px 18px #14213d0c}
+.label{color:#6b7280;font-size:13px}.value{font-size:27px;font-weight:800;margin-top:7px}
+.panel{margin-top:14px}.btn{width:100%;padding:13px;border:0;border-radius:12px;background:#087f5b;color:white;font-weight:700;font-size:15px;margin-top:10px}
+input,select{width:100%;padding:13px;border:1px solid #d9e0e8;border-radius:10px;margin-top:8px;background:white}
+.small{font-size:13px;color:#687386;line-height:1.5}#status{margin-top:12px;color:#b42318}
+</style></head><body><div class="wrap">
+<div class="brand">💸 MONEY PAY</div>
+<div class="cards">
+ <div class="card"><div class="label">My Balance</div><div class="value" id="balance">৳—</div></div>
+ <div class="card"><div class="label">My Referrals</div><div class="value" id="referrals">—</div></div>
+ <div class="card"><div class="label">Per Referral</div><div class="value">৳5</div></div>
+ <div class="card"><div class="label">Minimum Withdraw</div><div class="value">৳50</div></div>
+</div>
+<div class="panel"><b>👥 Refer & Earn</b><p class="small">Share your personal referral link. Earn ৳5 when a new user joins all required channels and verifies membership.</p><button class="btn" onclick="share()">Share Referral Link</button></div>
+<div class="panel"><b>💳 Withdraw</b><p class="small">Minimum withdrawal ৳50. Requests are reviewed manually by the admin.</p>
+<select id="method"><option>bKash</option><option>Nagad</option></select>
+<input id="account" placeholder="Your bKash/Nagad number" inputmode="tel">
+<button class="btn" onclick="withdraw()">Request ৳50 Withdrawal</button><div id="status"></div></div>
+</div>
+<script>
+const tg=window.Telegram.WebApp; tg.ready(); tg.expand();
+const headers={'Content-Type':'application/json','X-Telegram-Init-Data':tg.initData};
+let me=null;
+async function load(){try{let r=await fetch('/api/me',{headers});let d=await r.json();if(!r.ok)throw Error('Open this app from the verified Telegram bot.');me=d;document.getElementById('balance').textContent='৳'+Number(d.balance).toFixed(2);document.getElementById('referrals').textContent=d.referrals;}catch(e){document.getElementById('status').textContent=e.message;}}
+function share(){if(!tg.initDataUnsafe?.user){alert('Open from Telegram bot');return;}let link='https://t.me/{{ bot_username }}?start=ref_'+tg.initDataUnsafe.user.id; if(tg.openTelegramLink)tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent('Join MONEY PAY'));else navigator.clipboard?.writeText(link);}
+async function withdraw(){let account=document.getElementById('account').value.trim();let status=document.getElementById('status');status.textContent='Submitting...';try{let r=await fetch('/api/withdraw',{method:'POST',headers,body:JSON.stringify({method:document.getElementById('method').value,account})});let d=await r.json();status.textContent=d.message||d.error;if(r.ok)load();}catch(e){status.textContent='Request failed.';}}
+load();
+</script></body></html>
